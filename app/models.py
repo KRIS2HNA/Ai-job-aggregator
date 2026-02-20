@@ -16,6 +16,8 @@ class Job(Base):
     source = Column(String(100))
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     
+    job_skills = relationship("JobSkill", back_populates="job")
+    
 class Skill(Base):
     __tablename__ = "skills"
     
@@ -23,9 +25,12 @@ class Skill(Base):
     
     name = Column(String(100), unique=True, nullable=False)
     
+    job_skills = relationship("JobSkill", back_populates="skill")
 class JobSkill(Base):
     __tablename__ = "job_skills"
     
     job_id = Column(Integer, ForeignKey("jobs.id"), primary_key= True)
-    skills_id = Column(Integer, ForeignKey("skills.id"), primary_key= True)
-        
+    skill_id = Column(Integer, ForeignKey("skills.id"), primary_key= True)
+    
+    job = relationship("Job", back_populates="job_skills")
+    skill = relationship("Skill", back_populates="job_skills")

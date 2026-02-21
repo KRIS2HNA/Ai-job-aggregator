@@ -1,6 +1,7 @@
 from sqlalchemy.exc import IntegrityError
 from .database import SessionLocal
 from .models import Job, Skill, JobSkill
+from .scraper import scrape_jobs 
 import uuid
 
 def create_job_with_skills(db):
@@ -74,3 +75,47 @@ def get_all_jobs(db, location, skill, skip, limit):
         })
         
     return result
+
+def ingest_scraped_jobs(db):
+    scraped_jobs = scrape_jobs()
+    
+    for job_data in scraped_jobs:
+        
+        # check if job already exists 
+        existing_job = db.query(Job).filter(
+            Job.apply_link == job_data["apply_link"]
+        ).first()
+        if existing_job:
+            continue
+        
+        # Create Job
+        job = Job(
+            title=job_data["title"],
+            company=job_data["company"],
+            location=job_data["location"],
+            description=job_data["description"],
+            apply_link=job_data["apply_link"],
+            source="Scraped Data"
+        )
+        
+        db.add(job)
+        db.commit()
+        db.refresh(job)
+        
+        # Add skills(get or create)
+        for skill_name in job_data.get("skills", []):
+            skill = db.query(Skill).filter(Skill.name == skill_name).first()
+            
+            if not skill:
+                skill = Skill(name=skill_name)
+                db.add(skill)
+                db.commit()
+                db.refresh(skill)
+        
+            # Link job and skill
+            link = JobSkill(job = job, skill= skill)
+            db.add(link)
+        
+        db.commit()
+    
+    return {"message": "Scraped jobs ingested successfully"}

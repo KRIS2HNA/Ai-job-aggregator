@@ -4,6 +4,8 @@ from .models import Base
 from .job_service import create_job_with_skills, get_all_jobs
 from .schemas import JobResponse
 from typing import List
+from .job_service import ingest_scraped_jobs
+
 
 app = FastAPI()
 
@@ -35,3 +37,11 @@ def get_jobs(
     jobs = get_all_jobs(db, location, skill, skip, limit  )
     db.close()
     return jobs
+
+@app.get("/scrape")
+def scrape_and_store():
+    db = SessionLocal()
+    result = ingest_scraped_jobs(db)
+    db.close()
+    return result
+    

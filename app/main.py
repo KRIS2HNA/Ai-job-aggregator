@@ -44,4 +44,7 @@ def scrape_and_store():
     result = ingest_scraped_jobs(db)
     db.close()
     return result
+
+
+
     

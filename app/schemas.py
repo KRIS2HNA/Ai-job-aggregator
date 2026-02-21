@@ -11,3 +11,11 @@ class JobResponse(BaseModel):
     class Config:
         orm_model = True
         
+class JobDetailResponse(BaseModel):
+    id: int
+    title: str
+    company: str
+    location: str
+    description: str
+    apply_link: str
+    skills: List[str]

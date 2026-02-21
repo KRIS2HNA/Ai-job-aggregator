@@ -1,7 +1,31 @@
+import requests
+
 def scrape_jobs():
     """Mock Scraper (sim;uated scraped data)
     Later we replace with real scraping
     """
+    url = "https://remotive.com/api/remote-jobs"
+    
+    response = requests.get(url)
+    
+    if response.status_code != 200:
+        return []
+    data = response.json()
+    
+    jobs = []
+    
+    for item in data.get("jobs", [])[:5]: # Limit to first 5 jobs for demo
+            
+        jobs.append({
+            "title": item.get("title"),
+            "company": item.get("company_name"),
+            "location": item.get("candidate_required_location"),
+            "description": item.get("description"),
+            "apply_link": item.get("url"),
+            "skills": []  # Placeholder for skills, can be extracted from description later
+        })
+    return jobs
+
     
     jobs = [
         {

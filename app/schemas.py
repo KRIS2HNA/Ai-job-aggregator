@@ -5,7 +5,7 @@ class JobResponse(BaseModel):
     title: str
     company: str
     location: str
-    description: str
+    # description: str
     source: str
     
     class Config:

@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from .database import engine, SessionLocal
-from .models import Base
+from .models import Base, Job
 from .job_service import create_job_with_skills, get_all_jobs
-from .schemas import JobResponse
+from .schemas import JobResponse, JobDetailResponse
 from typing import List
 from .job_service import ingest_scraped_jobs
 
@@ -46,5 +46,25 @@ def scrape_and_store():
     return result
 
 
-
+@app.get("/jobs/{job_id}", response_model = JobDetailResponse)
+def get_job_detail(job_id: int):
+    db = SessionLocal()
+    job = db.query(Job).filter(Job.id == job_id).first()
     
+    if not job:
+        db.close()
+        return {"error": "Job not found"}
+    
+    skill_names = [js.skill.name for js in job.job_skills]
+    
+    result = JobDetailResponse(
+        id=job.id,
+        title=job.title,
+        company=job.company,
+        location=job.location,
+        description=job.description,
+        apply_link=job.apply_link,
+        skills=skill_names
+    )
+    db.close()
+    return result

@@ -2,6 +2,7 @@ from sqlalchemy.exc import IntegrityError
 from .database import SessionLocal
 from .models import Job, Skill, JobSkill
 from .scraper import scrape_jobs 
+from .skill_extractor import extract_skills
 import uuid
 
 def create_job_with_skills(db):
@@ -102,8 +103,11 @@ def ingest_scraped_jobs(db):
         db.commit()
         db.refresh(job)
         
+        description = job_data.get("description", "")
+        extracted_skills = extract_skills(description)
+        
         # Add skills(get or create)
-        for skill_name in job_data.get("skills", []):
+        for skill_name in extracted_skills:
             skill = db.query(Skill).filter(Skill.name == skill_name).first()
             
             if not skill:

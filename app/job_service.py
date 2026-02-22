@@ -3,6 +3,9 @@ from .database import SessionLocal
 from .models import Job, Skill, JobSkill
 from .scraper import scrape_jobs 
 from .skill_extractor import extract_skills
+from sqlalchemy import func
+from .recommender import build_recommendations
+
 import uuid
 
 def create_job_with_skills(db):
@@ -123,3 +126,76 @@ def ingest_scraped_jobs(db):
         db.commit()
     
     return {"message": "Scraped jobs ingested successfully"}
+
+def get_top_skills(db, limit=10):
+    results = (
+        db.query(Skill.name, func.count(JobSkill.job_id).label("job_count"))
+        .join(JobSkill, Skill.id == JobSkill.skill_id)
+        .group_by(Skill.name)
+        .order_by(func.count(JobSkill.job_id).desc())
+        .limit(limit)
+        .all()
+    )
+    
+    return [{"skill": name, "job_count": job_count} for name, job_count in results]
+
+
+def get_top_locations(db, limit=10):
+    results = (
+        db.query(Job.location, func.count(Job.id).label("job_count"))
+        .group_by(Job.location)
+        .order_by(func.count(Job.id).desc())
+        .limit(limit)
+        .all()
+    )
+    return [{"location": location, "job_count": job_count} for location, job_count in results]
+
+def get_top_companies(db, limit=10):
+    results = (
+        db.query(Job.company, func.count(Job.id).label("job_count"))
+        .group_by(Job.company)
+        .order_by(func.count(Job.id).desc())
+        .limit(limit)
+        .all()
+    )
+    return [{"company": company, "job_count": job_count} for company, job_count in results] 
+
+
+
+def get_recommendations(db, job_id, limit=5):
+
+    jobs = db.query(Job).all()
+
+    jobs_data = []
+
+    for job in jobs:
+        skills = [js.skill.name for js in job.job_skills]
+        jobs_data.append({
+            "id": job.id,
+            "skills": skills
+        })
+
+    job_ids, similarity_matrix = build_recommendations(jobs_data)
+
+    if job_id not in job_ids:
+        return []
+
+    index = job_ids.index(job_id)
+
+    similarity_scores = list(enumerate(similarity_matrix[index]))
+
+    similarity_scores = sorted(
+        similarity_scores,
+        key=lambda x: x[1],
+        reverse=True
+    )
+
+    # Skip itself (first one)
+    top_similar = similarity_scores[1:6]
+
+    recommendations = []
+
+    for idx, score in top_similar:
+        recommendations.append(jobs_data[idx]["id"])
+
+    return recommendations

@@ -1,10 +1,11 @@
 from fastapi import FastAPI
 from .database import engine, SessionLocal
 from .models import Base, Job
-from .job_service import create_job_with_skills, get_all_jobs
+from .job_service import create_job_with_skills, get_all_jobs, get_top_companies
 from .schemas import JobResponse, JobDetailResponse
 from typing import List
-from .job_service import ingest_scraped_jobs
+from .job_service import ingest_scraped_jobs, get_top_skills , get_top_locations
+from .job_service import get_recommendations
 
 
 app = FastAPI()
@@ -68,3 +69,33 @@ def get_job_detail(job_id: int):
     )
     db.close()
     return result
+
+@app.get("/analytics/top-skills")
+def top_skills(limit: int = 10):
+    db = SessionLocal()
+    data = get_top_skills(db, limit)
+    db.close()
+    return data
+
+@app.get("/analytics/top-locations")
+def top_locations(limit: int = 10):
+    db = SessionLocal()
+    data = get_top_locations(db, limit)
+    db.close()
+    return data
+
+
+@app.get("/analytics/top-companies")
+def top_companies(limit: int = 10):
+    db = SessionLocal()
+    data = get_top_companies(db, limit)
+    db.close()
+    return data
+
+
+@app.get("/jobs/{job_id}/recommend")
+def recommend_jobs(job_id: int, limit: int = 5):
+    db = SessionLocal()
+    recommendations = get_recommendations(db, job_id, limit)
+    db.close()
+    return recommendations

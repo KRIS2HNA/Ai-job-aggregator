@@ -5,6 +5,7 @@ from .scraper import scrape_jobs
 from .skill_extractor import extract_skills
 from sqlalchemy import func
 from .recommender import build_recommendations
+from .embedding_engine import compute_embeddings, semantic_similarity
 
 import uuid
 
@@ -161,42 +162,37 @@ def get_top_companies(db, limit=10):
     return [{"company": company, "job_count": job_count} for company, job_count in results] 
 
 
-
-def get_recommendations(db, job_id, limit=5):
+def get_recommendations(db, job_id, top_k=5):
 
     jobs = db.query(Job).all()
 
-    jobs_data = [] 
+    target_job = None
+    descriptions = []
+    job_ids = []
 
     for job in jobs:
-        skills = [js.skill.name for js in job.job_skills]
-        jobs_data.append({
-            "id": job.id,
-            "skills": skills
-        })
+        if job.id == job_id:
+            target_job = job
+        else:
+            descriptions.append(job.description or "")
+            job_ids.append(job.id)
 
-    job_ids, similarity_matrix = build_recommendations(jobs_data)
-
-    if job_id not in job_ids:
+    if not target_job:
         return []
 
-    index = job_ids.index(job_id)
+    scores = compute_embeddings(
+        target_job.description or "",
+        descriptions
+    )
 
-    similarity_scores = list(enumerate(similarity_matrix[index]))
-
-    similarity_scores = sorted(
-        similarity_scores,
+    # Rank by similarity
+    ranked = sorted(
+        zip(job_ids, scores),
         key=lambda x: x[1],
         reverse=True
     )
 
-    # Skip itself (first one)
-    top_similar = similarity_scores[1:6]
+    # Return top K job IDs
+    recommended = [job_id for job_id, _ in ranked[:top_k]]
 
-    recommendations = []
-
-    for idx, score in top_similar:
-        recommendations.append(jobs_data[idx]["id"])
-
-    return recommendations
-
+    return recommended

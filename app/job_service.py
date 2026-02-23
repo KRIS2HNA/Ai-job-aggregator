@@ -166,7 +166,7 @@ def get_recommendations(db, job_id, limit=5):
 
     jobs = db.query(Job).all()
 
-    jobs_data = []
+    jobs_data = [] 
 
     for job in jobs:
         skills = [js.skill.name for js in job.job_skills]
@@ -199,3 +199,4 @@ def get_recommendations(db, job_id, limit=5):
         recommendations.append(jobs_data[idx]["id"])
 
     return recommendations
+

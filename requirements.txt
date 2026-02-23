@@ -1,1 +1,16 @@
 requests
+Python
+
+FastAPI
+
+PostgreSQL
+
+SQLAlchemy
+
+spaCy
+
+scikit-learn
+
+Requests
+
+BeautifulSoup (for cleaning)

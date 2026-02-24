@@ -1,18 +1,10 @@
-requests
-Python
-
-FastAPI
-
-PostgreSQL
-
-SQLAlchemy
-
-spaCy
-
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+spacy
+sentence-transformers
 scikit-learn
-
-Requests
-
-BeautifulSoup (for cleaning)
-
-
+requests
+beautifulsoup4
+python-dotenv

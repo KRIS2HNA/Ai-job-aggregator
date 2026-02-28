@@ -39,3 +39,25 @@ ORM Layer (SQLAlchemy)
 PostgreSQL Database
 ↓
 NLP + Transformer ML Layer
+
+
+---
+
+## 📂 Project Structure
+
+ai-job-system/
+│
+├── app/
+│ ├── main.py
+│ ├── database.py
+│ ├── models.py
+│ ├── schemas.py
+│ ├── job_service.py
+│ ├── skill_extractor.py
+│ ├── analytics.py
+│ └── recommender.py
+│
+├── streamlit_app.py
+├── Dockerfile
+├── requirements.txt
+└── README.md

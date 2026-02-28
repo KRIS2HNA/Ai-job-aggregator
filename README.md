@@ -28,3 +28,14 @@ The system performs:
 ---
 
 ## 🏗 System Architecture
+Streamlit Dashboard
+↓
+FastAPI REST API
+↓
+Service Layer (Business Logic)
+↓
+ORM Layer (SQLAlchemy)
+↓
+PostgreSQL Database
+↓
+NLP + Transformer ML Layer
